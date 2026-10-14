@@ -126,8 +126,8 @@ p1_todo/
 ├── package.json            仅用于 npm 脚本与 ESM 标记，无任何依赖
 ├── LICENSE                 MIT 许可
 ├── .gitignore / .gitattributes / .nojekyll
-├── .github/workflows/
-│   └── pages.yml           推送到 main 后自动部署到 GitHub Pages
+├── deploy/
+│   └── github-pages-workflow.yml  Pages 自动部署工作流模板（启用方式见第九节）
 └── README.md
 ```
 
@@ -220,6 +220,16 @@ Windows 可试 `py server.py`；macOS / Linux 用 `python3 server.py`；或改�
 **Q5：想加"删除单条历史记录""导入导出 JSON"之类？**
 数据层已提供 `read/write/remove/clearAll/usage`，加功能只需在控制器里调用，不用碰存储细节。
 
+**Q6：`git push` 报 `refusing to allow a Personal Access Token to create or update workflow ... without workflow scope`？**
+GitHub 禁止普通权限的 token 推送 `.github/workflows/` 下的文件。本项目已把工作流模板放在
+`deploy/github-pages-workflow.yml`，仓库里不含受限路径，所以正常 push 不会触发该错误；
+若你自己手动把文件放到了 `.github/workflows/`，按第九节方式 B 的两种做法之一处理即可
+（网页上创建该文件，或给 token 勾上 `workflow` 权限）。
+
+**Q7：Pages 打开是 404？**
+确认三件事：仓库是 **Public**；**Settings → Pages** 的 Source 已设置为 `main` + `/ (root)`（或 GitHub Actions）；
+再等 1–2 分钟并 `Ctrl + F5` 强刷。本项目所有资源都是相对路径，放在 `/<仓库名>/` 子路径下也能正常工作。
+
 ---
 
 ## 八、换成 Vue3 + Vite + Tailwind
@@ -270,18 +280,38 @@ git push -u origin main
 之后不用再输密码）。若远端地址需要改动：
 `git remote set-url origin https://github.com/JameYoung3864/TodoSchedule.git`。
 
-### 第 3 步：开启 GitHub Pages（两种方式任选）
+### 第 3 步：开启 GitHub Pages
 
-**方式 A：GitHub Actions 自动部署（推荐，仓库里已配好）**
+**方式 A：直接从分支发布（推荐，零配置、不挑权限）**
 
-进入 <https://github.com/JameYoung3864/TodoSchedule/settings/pages>，把 **Source** 选为 **GitHub Actions**。
-之后每次 `git push`，`.github/workflows/pages.yml` 都会自动发布，Actions 页面能看到进度；
-首次执行通常 1–2 分钟。
+打开 <https://github.com/JameYoung3864/TodoSchedule/settings/pages> →
+**Source** 选 **Deploy from a branch** → 分支选 **`main`**、目录选 **`/ (root)`** → **Save**。
+等 1–2 分钟，访问 <https://jameyoung3864.github.io/TodoSchedule/> 即可。
+（本项目已放好 `.nojekyll`，避免 GitHub 用 Jekyll 处理静态文件。）
 
-**方式 B：直接从分支发布（不用 Actions）**
+**方式 B：GitHub Actions 自动部署（可选，每次 push 自动发布）**
 
-同页面选 **Source: Deploy from a branch** → **`main`** 分支 + **`/ (root)`** → Save。
-（本项目已放好 `.nojekyll`，可避免 GitHub 用 Jekyll 处理静态文件。）
+> 为什么默认不用它：GitHub 规定，**推送 `.github/workflows/` 下的文件需要 token 具备 `workflow` 权限**。
+> 你当前的 Personal Access Token 没有该权限，会报
+> `refusing to allow a Personal Access Token to create or update workflow ... without workflow scope`。
+> 因此工作流模板被放在 `deploy/github-pages-workflow.yml`，仓库里不包含受限路径，普通 token 即可推送。
+
+想启用自动部署，二选一：
+
+1. **网页上创建（最简单，不需要改 token）**：打开
+   <https://github.com/JameYoung3864/TodoSchedule/new/main/.github/workflows>，
+   文件名填 `pages.yml`，内容复制 `deploy/github-pages-workflow.yml`，提交即可。
+2. **给 token 加权限后本地创建**：在 GitHub → *Settings → Developer settings → Personal access tokens*
+   给该 token 勾上 **`workflow`** 后保存，然后：
+   ```bash
+   mkdir -p .github/workflows
+   cp deploy/github-pages-workflow.yml .github/workflows/pages.yml
+   git add .github/workflows/pages.yml
+   git commit -m "ci: 启用 GitHub Pages 自动部署"
+   git push
+   ```
+
+启用后进入 **Settings → Pages**，把 **Source** 改为 **GitHub Actions** 即可。
 
 ### 第 4 步：访问线上地址
 
@@ -291,7 +321,7 @@ git push -u origin main
 - 待办清单：<https://jameyoung3864.github.io/TodoSchedule/todos.html>
 - 统计：<https://jameyoung3864.github.io/TodoSchedule/stats.html>
 - 关于：<https://jameyoung3864.github.io/TodoSchedule/about.html>
-- 部署状态：仓库 **Actions** 标签页 / 右侧 **Deployments → github-pages**
+- 部署状态：仓库 **Settings → Pages** 顶部会显示状态；若启用了 Actions 方式，可在 **Actions** 标签页查看构建进度
 
 ### 部署后需要注意
 

@@ -1,0 +1,42 @@
+name: Deploy static site to GitHub Pages
+
+# 推送到 main 分支（或在 Actions 页面手动触发）时自动发布到 GitHub Pages
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只保留一次部署，新的推送会取消排队中的旧任务
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+        with:
+          # 仓库尚未开启 Pages 时自动开启（需要仓库管理员权限）
+          enablement: true
+
+      - name: 打包静态文件
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -3,6 +3,9 @@
 一个纯前端课程作业项目：**天气查询**（Open-Meteo 免费 API）+ **待办清单**（localStorage 持久化），
 原生 HTML / CSS / JavaScript（ES Modules）实现，**零第三方依赖、零构建步骤**。
 
+**仓库**：<https://github.com/JameYoung3864/TodoSchedule>　|　
+**在线演示**：<https://jameyoung3864.github.io/TodoSchedule/>（开启 Pages 后生效，见第九节）
+
 > 如果你的作业要求 Vue3 + Vite + Tailwind，见文末「[换成 Vue3 版本](#-换成-vue3--vite--tailwind)」一节，业务逻辑可 1:1 迁移。
 
 ---
@@ -245,54 +248,58 @@ cd weather-todo && npm i && npm i -D tailwindcss @tailwindcss/vite && npm i vue-
 本项目是纯静态站点、所有资源都用**相对路径**，因此可以直接发布到
 `https://<用户名>.github.io/<仓库名>/` 这样的子路径下，无需任何构建步骤。
 
-> 本地仓库已经初始化并完成首次提交（分支 `main`），你只需要「创建远端仓库 → 推送」两步。
+> 本地仓库已经初始化并完成提交（分支 `main`），远端 `origin` 也已指向
+> <https://github.com/JameYoung3864/TodoSchedule.git>，剩下就是推送 + 开启 Pages。
 
-### 第 1 步：在 GitHub 上创建一个空仓库
+### 第 1 步：确认 GitHub 上的仓库已存在
 
-打开 <https://github.com/new>，填写：
+仓库地址：**<https://github.com/JameYoung3864/TodoSchedule>**（Public）。
 
-- **Repository name**：`p1_todo`（或你喜欢的名字，例如 `weather-todo`）
-- **Public / Private**：建议 **Public** —— GitHub 免费账号的 Pages 只对公开仓库开放（私有仓库需 Pro）
-- **不要**勾选 *Add a README file* / *.gitignore* / *license*，保持空仓库
+若还没创建，打开 <https://github.com/new> 新建：**Repository name** 填 `TodoSchedule`，
+可见性选 **Public**（免费账号的 Pages 只对公开仓库开放），**不要**勾选 *Add a README file* /
+*.gitignore* / *license*，保持空仓库。
 
-### 第 2 步：关联远端并推送
-
-把下面的 `<用户名>`、`<仓库名>` 换成你自己的，然后在项目目录执行：
+### 第 2 步：推送
 
 ```bash
 cd C:\Users\asus\Desktop\p1_todo
-git remote add origin https://github.com/<用户名>/<仓库名>.git
 git push -u origin main
 ```
 
 推送时会弹出浏览器 / 凭据窗口让登录 GitHub（Windows 已安装 Git Credential Manager，登录一次即可，
-之后不用再输密码）。若提示远端已存在：`git remote set-url origin https://github.com/<用户名>/<仓库名>.git`。
+之后不用再输密码）。若远端地址需要改动：
+`git remote set-url origin https://github.com/JameYoung3864/TodoSchedule.git`。
 
 ### 第 3 步：开启 GitHub Pages（两种方式任选）
 
 **方式 A：GitHub Actions 自动部署（推荐，仓库里已配好）**
 
-进入仓库 **Settings → Pages**，把 **Source** 选为 **GitHub Actions**。
+进入 <https://github.com/JameYoung3864/TodoSchedule/settings/pages>，把 **Source** 选为 **GitHub Actions**。
 之后每次 `git push`，`.github/workflows/pages.yml` 都会自动发布，Actions 页面能看到进度；
 首次执行通常 1–2 分钟。
 
 **方式 B：直接从分支发布（不用 Actions）**
 
-仓库 **Settings → Pages → Source: Deploy from a branch** → 选择 **`main`** 分支 + **`/ (root)`** → Save。
+同页面选 **Source: Deploy from a branch** → **`main`** 分支 + **`/ (root)`** → Save。
 （本项目已放好 `.nojekyll`，可避免 GitHub 用 Jekyll 处理静态文件。）
 
 ### 第 4 步：访问线上地址
 
-- 方式 A：部署完成后，仓库首页右侧 **Deployments / github-pages** 环境里会给出网址
-- 方式 B：`https://<用户名>.github.io/<仓库名>/`
-- 也可以直接试：`https://<用户名>.github.io/<仓库名>/index.html`、`/todos.html`、`/stats.html`、`/about.html`
+预计地址：**<https://jameyoung3864.github.io/TodoSchedule/>**
+
+- 首页：<https://jameyoung3864.github.io/TodoSchedule/>
+- 待办清单：<https://jameyoung3864.github.io/TodoSchedule/todos.html>
+- 统计：<https://jameyoung3864.github.io/TodoSchedule/stats.html>
+- 关于：<https://jameyoung3864.github.io/TodoSchedule/about.html>
+- 部署状态：仓库 **Actions** 标签页 / 右侧 **Deployments → github-pages**
 
 ### 部署后需要注意
 
+- **首次访问可能 404**：Pages 首次构建需要 1–2 分钟，稍等后刷新；若一直 404，检查 Settings → Pages 的 Source 是否设置正确。
 - **天气接口**：Open-Meteo 支持 HTTPS 且允许跨域，部署到 Pages 后功能与本地一致；若浏览器插件/网络拦截了请求，页面上会有提示并可用「演示数据」查看界面。
 - **localStorage 按域名隔离**：线上域名和你本地的 `127.0.0.1:8808` 各自独立，线上首次打开时待办是空的，属正常现象。
 - **缓存**：GitHub Pages 有 CDN 缓存，更新后若没变化，用 `Ctrl + F5` 强制刷新。
-- **私有仓库**：免费账号无法为私有仓库启用 Pages，请把仓库设为 Public。
+- **私有仓库**：免费账号无法为私有仓库启用 Pages，本仓库已设为 Public，无需担心。
 
 ### 常用 git 命令备忘
 

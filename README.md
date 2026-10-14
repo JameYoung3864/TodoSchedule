@@ -121,6 +121,10 @@ p1_todo/
 │   ├── run-tests.mjs       25 项零依赖单元测试（数据层 / 接口层）
 │   └── check-dom.mjs       静态检查：JS 选择器 ↔ HTML 元素是否一一对应
 ├── package.json            仅用于 npm 脚本与 ESM 标记，无任何依赖
+├── LICENSE                 MIT 许可
+├── .gitignore / .gitattributes / .nojekyll
+├── .github/workflows/
+│   └── pages.yml           推送到 main 后自动部署到 GitHub Pages
 └── README.md
 ```
 
@@ -236,7 +240,72 @@ cd weather-todo && npm i && npm i -D tailwindcss @tailwindcss/vite && npm i vue-
 
 ---
 
-## 九、许可与数据来源
+## 九、部署到 GitHub / GitHub Pages
+
+本项目是纯静态站点、所有资源都用**相对路径**，因此可以直接发布到
+`https://<用户名>.github.io/<仓库名>/` 这样的子路径下，无需任何构建步骤。
+
+> 本地仓库已经初始化并完成首次提交（分支 `main`），你只需要「创建远端仓库 → 推送」两步。
+
+### 第 1 步：在 GitHub 上创建一个空仓库
+
+打开 <https://github.com/new>，填写：
+
+- **Repository name**：`p1_todo`（或你喜欢的名字，例如 `weather-todo`）
+- **Public / Private**：建议 **Public** —— GitHub 免费账号的 Pages 只对公开仓库开放（私有仓库需 Pro）
+- **不要**勾选 *Add a README file* / *.gitignore* / *license*，保持空仓库
+
+### 第 2 步：关联远端并推送
+
+把下面的 `<用户名>`、`<仓库名>` 换成你自己的，然后在项目目录执行：
+
+```bash
+cd C:\Users\asus\Desktop\p1_todo
+git remote add origin https://github.com/<用户名>/<仓库名>.git
+git push -u origin main
+```
+
+推送时会弹出浏览器 / 凭据窗口让登录 GitHub（Windows 已安装 Git Credential Manager，登录一次即可，
+之后不用再输密码）。若提示远端已存在：`git remote set-url origin https://github.com/<用户名>/<仓库名>.git`。
+
+### 第 3 步：开启 GitHub Pages（两种方式任选）
+
+**方式 A：GitHub Actions 自动部署（推荐，仓库里已配好）**
+
+进入仓库 **Settings → Pages**，把 **Source** 选为 **GitHub Actions**。
+之后每次 `git push`，`.github/workflows/pages.yml` 都会自动发布，Actions 页面能看到进度；
+首次执行通常 1–2 分钟。
+
+**方式 B：直接从分支发布（不用 Actions）**
+
+仓库 **Settings → Pages → Source: Deploy from a branch** → 选择 **`main`** 分支 + **`/ (root)`** → Save。
+（本项目已放好 `.nojekyll`，可避免 GitHub 用 Jekyll 处理静态文件。）
+
+### 第 4 步：访问线上地址
+
+- 方式 A：部署完成后，仓库首页右侧 **Deployments / github-pages** 环境里会给出网址
+- 方式 B：`https://<用户名>.github.io/<仓库名>/`
+- 也可以直接试：`https://<用户名>.github.io/<仓库名>/index.html`、`/todos.html`、`/stats.html`、`/about.html`
+
+### 部署后需要注意
+
+- **天气接口**：Open-Meteo 支持 HTTPS 且允许跨域，部署到 Pages 后功能与本地一致；若浏览器插件/网络拦截了请求，页面上会有提示并可用「演示数据」查看界面。
+- **localStorage 按域名隔离**：线上域名和你本地的 `127.0.0.1:8808` 各自独立，线上首次打开时待办是空的，属正常现象。
+- **缓存**：GitHub Pages 有 CDN 缓存，更新后若没变化，用 `Ctrl + F5` 强制刷新。
+- **私有仓库**：免费账号无法为私有仓库启用 Pages，请把仓库设为 Public。
+
+### 常用 git 命令备忘
+
+```bash
+git status                       # 查看改动
+git add -A && git commit -m "..." # 提交
+git push                         # 推送（首次用 git push -u origin main）
+git log --oneline --graph        # 查看提交历史
+```
+
+---
+
+## 十、许可与数据来源
 
 - 天气数据：[Open-Meteo](https://open-meteo.com/)，遵循 **CC BY 4.0**，免费且无需 API Key，请勿用于商业生产。
-- 本项目代码可自由用于课程作业与学习。
+- 本项目代码以 MIT 许可发布（见 `LICENSE`），可自由用于课程作业与学习。

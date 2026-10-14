@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="待办清单：添加、编辑、删除、优先级、筛选、搜索与完成率统计" />
+<title>待办清单 | Weather &amp; Todo</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>" />
+<link rel="stylesheet" href="css/style.css" />
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('wtapp:theme');
+      if (t !== 'dark' && t !== 'light') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.colorScheme = t;
+    } catch (e) { /* ignore */ }
+  })();
+</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">⛅</span>
+      <span>天气 · 待办<small>Weather &amp; Todo</small></span>
+    </a>
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-label="展开导航">☰</button>
+    <nav class="site-nav" data-nav aria-label="主导航">
+      <ul>
+        <li><a href="index.html">天气首页</a></li>
+        <li><a href="todos.html">待办清单</a></li>
+        <li><a href="stats.html">统计</a></li>
+        <li><a href="about.html">关于</a></li>
+        <li><button class="btn btn-ghost btn-icon" type="button" data-theme-toggle aria-label="切换深色模式">☀️</button></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-head">
+    <h1>待办清单</h1>
+    <p>支持添加、编辑（双击文字或点 ✎）、删除、完成、优先级、筛选、搜索、清空已完成。所有数据保存在浏览器 localStorage，刷新不丢失。</p>
+  </div>
+
+  <!-- 添加 -->
+  <section class="card fade-in">
+    <div class="card-title"><h2>➕ 新增待办</h2></div>
+    <form class="todo-form" id="todoForm" autocomplete="off">
+      <div class="field grow">
+        <label for="todoInput">要做什么？</label>
+        <input class="input" id="todoInput" name="text" maxlength="120" placeholder="例如：复习 Vue3 组合式 API（回车快速添加）" required />
+      </div>
+      <div class="field">
+        <label for="prioritySelect">优先级</label>
+        <select class="select" id="prioritySelect">
+          <option value="high">🔴 高</option>
+          <option value="medium" selected>🟡 中</option>
+          <option value="low">🟢 低</option>
+        </select>
+      </div>
+      <button class="btn" type="submit">添加</button>
+    </form>
+  </section>
+
+  <!-- 进度 -->
+  <section class="card fade-in" style="margin-top:1.1rem">
+    <div class="card-title">
+      <h2>📈 完成进度</h2>
+      <span class="count" id="progressText">0 / 0</span>
+    </div>
+    <div class="progress" role="progressbar" aria-labelledby="progressText" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+      <i id="progressFill"></i>
+    </div>
+    <div class="grid grid-4" style="margin-top:1rem">
+      <div><div class="stat-value" id="statTotal">0</div><div class="stat-label">全部任务</div></div>
+      <div><div class="stat-value" id="statActive">0</div><div class="stat-label">未完成</div></div>
+      <div><div class="stat-value" id="statDone">0</div><div class="stat-label">已完成</div></div>
+      <div><div class="stat-value" id="statRate">0%</div><div class="stat-label">完成率</div></div>
+    </div>
+  </section>
+
+  <!-- 工具栏 + 列表 -->
+  <section class="card fade-in" style="margin-top:1.1rem">
+    <div class="toolbar">
+      <div class="segmented" id="filterStatus" role="group" aria-label="按状态筛选">
+        <button type="button" data-status="all" aria-pressed="true">全部</button>
+        <button type="button" data-status="active" aria-pressed="false">未完成</button>
+        <button type="button" data-status="done" aria-pressed="false">已完成</button>
+      </div>
+      <select class="select" id="filterPriority" aria-label="按优先级筛选" style="width:auto">
+        <option value="all">全部优先级</option>
+        <option value="high">🔴 高</option>
+        <option value="medium">🟡 中</option>
+        <option value="low">🟢 低</option>
+      </select>
+      <select class="select" id="sortSelect" aria-label="排序方式" style="width:auto">
+        <option value="created-desc">最新创建</option>
+        <option value="created-asc">最早创建</option>
+        <option value="priority">优先级从高到低</option>
+        <option value="alpha">按名称</option>
+      </select>
+      <div class="field grow">
+        <label class="sr-only" for="searchInput">搜索任务</label>
+        <input class="input" id="searchInput" type="search" placeholder="🔍 搜索任务内容…" />
+      </div>
+      <button class="btn btn-ghost btn-sm" type="button" id="clearDoneBtn">清空已完成</button>
+      <button class="btn btn-ghost btn-sm" type="button" id="seedBtn">示例数据</button>
+    </div>
+
+    <ul class="todo-list" id="todoList"></ul>
+    <div class="empty" id="todoEmpty" hidden>
+      <span class="empty-icon">🗒️</span>
+      <span id="todoEmptyText">还没有任务，先添加一条吧。</span>
+    </div>
+    <p class="hint" style="margin-top:.9rem" id="listHint"></p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© <span data-year>2025</span> Weather &amp; Todo · 前端课程作业</span>
+    <span>数据仅存于本地浏览器 · <a href="stats.html">查看统计</a></span>
+  </div>
+</footer>
+
+<script type="module" src="js/todos.js"></script>
+</body>
+</html>

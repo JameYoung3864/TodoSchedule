@@ -1,0 +1,32 @@
+# ---------- 操作系统 / 编辑器 ----------
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*~
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ---------- 依赖 / 构建产物（本项目零依赖，仅作占位） ----------
+node_modules/
+dist/
+.vite/
+.cache/
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---------- 本地临时文件 / 调试 ----------
+*.log
+.chrome-profile/
+.chrome-log.txt
+.dump.html
+.env
+.env.local
+
+# 运行环境（DSH sandbox）产生的空占位文件，与本项目无关，不纳入版本管理
+startup.py

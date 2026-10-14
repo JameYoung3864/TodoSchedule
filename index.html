@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="天气查询 + 待办清单：基于 Open-Meteo 免费 API 的纯前端作业项目" />
+<title>天气查询 · 首页 | Weather & Todo</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛅</text></svg>" />
+<link rel="stylesheet" href="css/style.css" />
+<script>
+  /* 首屏防闪烁：在 CSS 渲染前确定主题 */
+  (function () {
+    try {
+      var t = localStorage.getItem('wtapp:theme');
+      if (t !== 'dark' && t !== 'light') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.colorScheme = t;
+    } catch (e) { /* ignore */ }
+  })();
+</script>
+</head>
+<body>
+<div class="sky" id="sky" data-weather="clear" data-day="1" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">⛅</span>
+      <span>天气 · 待办<small>Weather &amp; Todo</small></span>
+    </a>
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-label="展开导航">☰</button>
+    <nav class="site-nav" data-nav aria-label="主导航">
+      <ul>
+        <li><a href="index.html">天气首页</a></li>
+        <li><a href="todos.html">待办清单</a></li>
+        <li><a href="stats.html">统计</a></li>
+        <li><a href="about.html">关于</a></li>
+        <li><button class="btn btn-ghost btn-icon" type="button" data-theme-toggle aria-label="切换深色模式">☀️</button></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-head">
+    <h1>天气查询</h1>
+    <p>输入任意城市名即可查询实时天气与未来 3 天预报，数据来自 Open-Meteo 免费 API（无需 API Key）。收藏城市与搜索历史会保存在本地。</p>
+  </div>
+
+  <!-- 搜索区 -->
+  <section class="card fade-in" aria-labelledby="search-title">
+    <div class="card-title">
+      <h2 id="search-title">🔍 搜索城市</h2>
+      <span class="count" id="offlineHint" hidden>离线城市表</span>
+    </div>
+
+    <form class="search-row" id="searchForm" autocomplete="off">
+      <div class="field grow">
+        <label for="cityInput">城市名称（支持中文 / 英文 / “纬度,经度”）</label>
+        <input class="input" id="cityInput" name="city" list="cityOptions" placeholder="例如：北京、Shanghai、39.9,116.4" required />
+        <datalist id="cityOptions"></datalist>
+      </div>
+      <div class="search-actions">
+        <button class="btn" type="submit" id="searchBtn">查询天气</button>
+        <button class="btn btn-ghost" type="button" id="mockBtn" title="网络不可用时用本地演示数据展示页面效果">演示数据</button>
+        <select class="select" id="unitSelect" aria-label="温度单位" title="温度单位">
+          <option value="celsius">°C</option>
+          <option value="fahrenheit">°F</option>
+        </select>
+      </div>
+    </form>
+
+    <p class="hint" style="margin-top:.6rem">提示：<span class="kbd">Enter</span> 直接查询，<span class="kbd">Shift</span> + <span class="kbd">D</span> 切换深色模式。</p>
+
+    <ul class="suggestions" id="suggestions" hidden></ul>
+
+    <div id="statusArea" style="margin-top:1rem"></div>
+  </section>
+
+  <!-- 收藏 / 历史 -->
+  <section class="grid grid-2" style="margin-top:1.1rem">
+    <div class="card fade-in">
+      <div class="card-title">
+        <h2>⭐ 收藏城市</h2>
+        <span class="count" id="favCount">0</span>
+      </div>
+      <div class="chip-list" id="favList"></div>
+      <p class="hint" id="favEmpty">还没有收藏城市，查询后点击 ★ 即可收藏。</p>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title">
+        <h2>🕘 搜索历史</h2>
+        <button class="btn btn-ghost btn-sm" type="button" id="clearHistoryBtn">清空</button>
+      </div>
+      <div class="chip-list" id="historyList"></div>
+      <p class="hint" id="historyEmpty">暂无搜索历史。</p>
+    </div>
+  </section>
+
+  <!-- 当前天气 -->
+  <section id="weatherSection" hidden style="margin-top:1.1rem">
+    <div class="weather-hero">
+      <div class="card fade-in" id="currentCard">
+        <div class="card-title">
+          <h2 id="placeName">—</h2>
+          <button class="btn btn-ghost btn-sm" type="button" id="favBtn" aria-pressed="false">☆ 收藏</button>
+        </div>
+        <div class="weather-now">
+          <span class="weather-emoji" id="curIcon" aria-hidden="true">⛅</span>
+          <div>
+            <div class="weather-temp"><span id="curTemp">--</span><sup id="curUnit">°C</sup></div>
+            <div class="weather-desc" id="curDesc">—</div>
+            <div class="weather-place" id="curPlace">—</div>
+          </div>
+        </div>
+        <div class="weather-metrics">
+          <div class="metric"><span class="m-label">体感温度</span><span class="m-value" id="curApparent">—</span></div>
+          <div class="metric"><span class="m-label">相对湿度</span><span class="m-value" id="curHumidity">—</span></div>
+          <div class="metric"><span class="m-label">风速</span><span class="m-value" id="curWind">—</span></div>
+          <div class="metric"><span class="m-label">降水</span><span class="m-value" id="curRain">—</span></div>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-title"><h2>📌 本地概况</h2></div>
+        <dl style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:.5rem .9rem;font-size:.9rem">
+          <dt class="stat-label">时区</dt><dd style="margin:0" id="infoTz">—</dd>
+          <dt class="stat-label">坐标</dt><dd style="margin:0" id="infoCoord">—</dd>
+          <dt class="stat-label">观测时间</dt><dd style="margin:0" id="infoTime">—</dd>
+          <dt class="stat-label">数据来源</dt><dd style="margin:0" id="infoSource">Open-Meteo</dd>
+          <dt class="stat-label">更新于</dt><dd style="margin:0" id="infoFetched">—</dd>
+        </dl>
+        <p class="hint" id="mockNotice" hidden style="margin-top:.8rem">⚠️ 当前为<b>离线演示数据</b>（接口不可用时的兜底），仅用于展示界面效果。</p>
+      </div>
+    </div>
+
+    <!-- 未来 3 天预报 -->
+    <div class="card fade-in" style="margin-top:1.1rem">
+      <div class="card-title"><h2>📅 未来 3 天预报</h2><span class="count">Open-Meteo daily</span></div>
+      <div class="forecast-grid" id="forecastGrid"></div>
+    </div>
+  </section>
+
+  <section class="card" id="emptyState" style="margin-top:1.1rem">
+    <div class="empty">
+      <span class="empty-icon">🌤️</span>
+      输入城市名开始查询，例如「杭州」「Tokyo」，或直接点击下方常用城市。
+    </div>
+    <div class="chip-list" style="justify-content:center" id="quickCities"></div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© <span data-year>2025</span> Weather &amp; Todo · 前端课程作业</span>
+    <span>天气数据：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（CC BY 4.0）</span>
+  </div>
+</footer>
+
+<script type="module" src="js/weather.js"></script>
+</body>
+</html>

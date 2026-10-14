@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="关于本项目：技术栈、功能清单、目录结构、API 说明与运行步骤" />
+<title>关于 | Weather &amp; Todo</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>ℹ️</text></svg>" />
+<link rel="stylesheet" href="css/style.css" />
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('wtapp:theme');
+      if (t !== 'dark' && t !== 'light') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.colorScheme = t;
+    } catch (e) { /* ignore */ }
+  })();
+</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">⛅</span>
+      <span>天气 · 待办<small>Weather &amp; Todo</small></span>
+    </a>
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-label="展开导航">☰</button>
+    <nav class="site-nav" data-nav aria-label="主导航">
+      <ul>
+        <li><a href="index.html">天气首页</a></li>
+        <li><a href="todos.html">待办清单</a></li>
+        <li><a href="stats.html">统计</a></li>
+        <li><a href="about.html">关于</a></li>
+        <li><button class="btn btn-ghost btn-icon" type="button" data-theme-toggle aria-label="切换深色模式">☀️</button></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-head">
+    <h1>关于本项目</h1>
+    <p>一个「天气查询 + 待办清单」的前端作业项目：原生 HTML / CSS / JavaScript（ES Modules），零第三方依赖、零构建步骤，双击或起一个静态服务器即可运行。</p>
+  </div>
+
+  <section class="grid grid-sidebar">
+    <div class="card prose fade-in">
+      <h2>✨ 功能清单</h2>
+      <ul>
+        <li><b>天气</b>：城市搜索（地理编码）、当前温度 / 天气 / 风速 / 湿度 / 体感 / 降水、未来 3 天预报、°C ↔ °F 切换。</li>
+        <li><b>天气</b>：搜索历史（去重，最多 8 条）、收藏城市、依据天气与昼夜自动切换背景。</li>
+        <li><b>待办</b>：添加、删除、编辑、完成、三级优先级、按状态 / 优先级筛选、关键词搜索、排序、清空已完成。</li>
+        <li><b>待办</b>：完成率进度条与统计卡，数据持久化到 localStorage。</li>
+        <li><b>统计</b>：完成率环形图、优先级分布条形图、近 7 天完成趋势柱状图、天气查询次数与热门城市。</li>
+        <li><b>UI</b>：简洁现代卡片风格、响应式（手机 / 平板 / 桌面）、深色模式（跟随系统 + 手动切换并记忆）。</li>
+        <li><b>健壮性</b>：接口超时与失败有友好提示；地理编码失败自动降级到内置城市表；完全离线可用「演示数据」查看页面效果。</li>
+      </ul>
+
+      <h2>🧱 技术栈</h2>
+      <ul>
+        <li>HTML5 语义化标签 + 无障碍属性（<code>aria-*</code>、<code>role</code>、跳转焦点样式）。</li>
+        <li>CSS3：自定义属性（CSS 变量）实现主题、Flex / Grid 布局、<code>backdrop-filter</code>、<code>color-mix()</code>、动画与过渡、<code>prefers-color-scheme</code>、<code>prefers-reduced-motion</code>、打印样式。</li>
+        <li>JavaScript（ES2015+）：ES Modules 分文件、<code>fetch</code> + <code>AbortController</code>、可选链、异步 / 错误分类处理。</li>
+        <li>数据持久化：<code>localStorage</code>（隐私模式下自动降级为内存存储，不报错）。</li>
+        <li>安全：渲染用户输入一律使用 <code>textContent</code> / DOM API，从根本上避免 XSS。</li>
+      </ul>
+
+      <h2>📁 目录结构</h2>
+      <div class="tree">p1_todo/
+├── index.html          天气首页
+├── todos.html          待办清单
+├── stats.html          统计页
+├── about.html          关于页
+├── css/
+│   └── style.css       全站样式（主题变量 / 组件 / 响应式）
+├── js/
+│   ├── data.js         静态数据：WMO 天气代码表、离线城市表
+│   ├── store.js        localStorage 封装（含内存降级）
+│   ├── api.js          Open-Meteo 接口封装 + 数据归一化 + 演示数据
+│   ├── theme.js        深色模式、导航高亮等全站公共逻辑
+│   ├── weather.js      天气页控制器
+│   ├── todos.js        待办页控制器
+│   └── stats.js        统计页控制器
+├── server.py           一键启动的本地服务器（Python 标准库，零依赖）
+└── README.md           运行步骤与说明</div>
+
+      <h2>🔌 使用的接口</h2>
+      <p>全部来自 <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>，免费、无需 API Key、支持 HTTPS 与跨域：</p>
+      <ul>
+        <li>地理编码：<code>https://geocoding-api.open-meteo.com/v1/search?name=杭州&amp;count=6&amp;language=zh&amp;format=json</code></li>
+        <li>天气预报：<code>https://api.open-meteo.com/v1/forecast?latitude=..&amp;longitude=..&amp;current=..&amp;daily=..&amp;timezone=auto</code></li>
+      </ul>
+      <pre class="code">// js/api.js 中实际请求的字段
+current = temperature_2m, relative_humidity_2m, apparent_temperature,
+          is_day, precipitation, weather_code, wind_speed_10m, wind_direction_10m
+daily   = weather_code, temperature_2m_max, temperature_2m_min,
+          precipitation_probability_max, sunrise, sunset
+forecast_days = 4   // 第 1 天为今天，页面展示后 3 天</pre>
+
+      <h2>🚀 运行步骤</h2>
+      <p>因为使用了 ES Modules，请通过 HTTP 打开页面（直接双击 <code>file://</code> 会被浏览器的模块跨域策略拦截）：</p>
+      <pre class="code"># 方式一：运行项目自带的 server.py（推荐，Python 标准库零依赖）
+cd p1_todo
+python server.py            # 自动选端口并打开 http://127.0.0.1:8808
+python server.py 9000       # 指定端口
+python server.py --host 0.0.0.0   # 手机连同一 WiFi 预览响应式
+#（macOS / Linux 用 python3 server.py）
+
+# 方式二：Python 标准库一行命令
+python -m http.server 8808
+
+# 方式三：Node.js
+npx serve . -l 8808
+
+# 方式四：VS Code 安装 Live Server 插件，右键 index.html → Open with Live Server</pre>
+      <p class="hint" id="envHint"></p>
+
+      <h2>❓ 常见问题</h2>
+      <ul>
+        <li><b>查不到天气 / 一直转圈？</b>请检查网络是否能访问 <code>api.open-meteo.com</code>；若被网络策略拦截，可点击首页的「演示数据」按钮查看完整界面效果（页面会明确标注为演示数据）。</li>
+        <li><b>数据存在哪里？</b>只存在你自己浏览器的 localStorage，键名统一以 <code>wtapp:</code> 开头，不会上传服务器。</li>
+        <li><b>怎么切换深色模式？</b>点右上角图标，或按 <span class="kbd">Shift</span> + <span class="kbd">D</span>，选择会被记住；未手动选择时自动跟随系统。</li>
+      </ul>
+    </div>
+
+    <div class="grid" style="gap:1.1rem;align-content:start">
+      <div class="card fade-in">
+        <div class="card-title"><h2>📊 我的本地数据</h2></div>
+        <div class="grid" style="gap:.6rem" id="liveStats"></div>
+      </div>
+      <div class="card fade-in">
+        <div class="card-title"><h2>⌨️ 快捷键</h2></div>
+        <ul style="list-style:none;padding:0;margin:0;display:grid;gap:.45rem;font-size:.9rem">
+          <li><span class="kbd">Shift</span> + <span class="kbd">D</span> 切换深色模式</li>
+          <li><span class="kbd">Enter</span> 提交搜索 / 添加待办</li>
+          <li><span class="kbd">双击</span> 待办文字进入编辑</li>
+          <li><span class="kbd">Esc</span> 取消编辑</li>
+        </ul>
+      </div>
+      <div class="card fade-in">
+        <div class="card-title"><h2>👤 作者信息</h2></div>
+        <p class="hint" style="margin:0">姓名：__________　学号：__________<br />课程：前端开发基础　提交日期：<span data-today>—</span></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© <span data-year>2025</span> Weather &amp; Todo · 前端课程作业</span>
+    <span>天气数据：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（CC BY 4.0）</span>
+  </div>
+</footer>
+
+<script type="module" src="js/about.js"></script>
+</body>
+</html>

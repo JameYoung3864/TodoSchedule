@@ -1,0 +1,12 @@
+{
+  "name": "weather-todo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "天气查询 + 待办清单（原生 HTML/CSS/JS，零依赖）",
+  "scripts": {
+    "dev": "npx --yes serve . -l 8808",
+    "serve": "python server.py",
+    "test": "node tests/run-tests.mjs"
+  }
+}
